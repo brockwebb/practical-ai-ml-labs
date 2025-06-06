@@ -1,3 +1,9 @@
+# Large datasets - download separately
+/data/namebystate/
+/data/*.zip
+/data/*.csv
+*.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
