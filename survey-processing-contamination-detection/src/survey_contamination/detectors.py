@@ -69,7 +69,11 @@ class FeatureClassifierDetector:
     def score(self, values: Iterable[str]) -> np.ndarray:
         features = featurize_names(values, self.first_names, self.surnames)
         if hasattr(self.model, "predict_proba"):
-            return self.model.predict_proba(features)[:, 1]
+            probabilities = self.model.predict_proba(features)
+            classes = list(self.model.classes_)
+            if True in classes:
+                return probabilities[:, classes.index(True)]
+            return np.zeros(len(features), dtype=float)
         return self.model.predict(features).astype(float)
 
     def predict(self, values: Iterable[str]) -> np.ndarray:
