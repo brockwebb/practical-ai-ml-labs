@@ -5,6 +5,19 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 
 
 def evaluate_detector_predictions(frame: pd.DataFrame, detector_name: str) -> dict[str, float | int | str]:
+    if frame.empty:
+        return {
+            "detector": detector_name,
+            "records": 0,
+            "true_positives": 0,
+            "false_positives": 0,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+        }
+
     y_true = frame["is_contaminated"].astype(bool)
     y_pred = frame["predicted"].astype(bool)
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[False, True]).ravel()
