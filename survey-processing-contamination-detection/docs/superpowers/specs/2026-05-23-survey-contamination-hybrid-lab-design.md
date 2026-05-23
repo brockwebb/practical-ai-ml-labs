@@ -4,6 +4,8 @@
 
 Build the current README concept into a runnable hybrid lab for detecting personal names accidentally entered in business-name survey fields. The lab should feel practical for survey processing and data quality work, while staying light enough for students to run locally without specialized hardware.
 
+The lab should also make a deliberate teaching point: many data quality problems do not require an LLM. This example should show how local rules, standard Python packages, and traditional machine learning can solve a targeted survey-processing problem with lower cost, better privacy, easier reproducibility, and simpler operational controls.
+
 ## Scope
 
 The first implementation will create a complete baseline lab, not a research-grade benchmark. It will include reusable Python modules, command-line scripts, a notebook walkthrough, tests, and updated setup instructions.
@@ -22,6 +24,7 @@ In scope:
 Out of scope for the first pass:
 
 - Transformer-based models.
+- LLM-based classification, prompting, or external AI APIs.
 - Production deployment services or APIs.
 - Download automation for external datasets.
 - Manual labeling interfaces.
@@ -87,12 +90,13 @@ The detector interface should be simple: each detector accepts a sequence of str
 The notebook will walk through:
 
 1. Problem framing and why low contamination rates are hard.
-2. Loading names and inspecting frequency distributions.
-3. Creating synthetic businesses and contaminated examples.
-4. Running each detector.
-5. Comparing metrics across contamination rates.
-6. Reviewing false positives and false negatives.
-7. Discussing threshold selection for survey operations.
+2. Why this is a good local/traditional ML problem rather than an LLM-first problem.
+3. Loading names and inspecting frequency distributions.
+4. Creating synthetic businesses and contaminated examples.
+5. Running each detector.
+6. Comparing metrics across contamination rates.
+7. Reviewing false positives and false negatives.
+8. Discussing threshold selection for survey operations.
 
 The notebook should be executable top to bottom after installing `requirements.txt`.
 
@@ -130,4 +134,5 @@ The lab is complete when:
 - The scripts produce reusable intermediate datasets and evaluation summaries.
 - Tests pass without requiring spaCy.
 - spaCy is documented as optional.
+- The README and notebook clearly position the lab as a local, traditional ML approach instead of an LLM solution.
 - The notebook demonstrates the practical precision-recall trade-off at low contamination rates.
