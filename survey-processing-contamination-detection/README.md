@@ -15,10 +15,16 @@ You will build a runnable contamination detection pipeline that:
 - prepares reference name data from local files
 - creates synthetic business names with labeled contamination
 - compares dictionary, heuristic, and feature-based ML detectors
-- evaluates precision, recall, F1, confusion matrices, and error examples
+- evaluates precision, recall, F1, true/false positive and negative counts, and error examples
 - walks through the workflow in a teaching notebook
 
 ## Setup
+
+Run all commands from this lab directory:
+
+```bash
+cd survey-processing-contamination-detection
+```
 
 ```bash
 conda create -n survey-contamination python=3.11
@@ -27,6 +33,13 @@ pip install -r requirements.txt
 ```
 
 If your system does not provide `python`, use `python3` for the commands below.
+
+## Data Inputs
+
+The lab uses bundled local inputs:
+
+- `data/Names_2010Census.csv` for Census surnames
+- `data/namesbystate.zip` for SSA first-name records by state
 
 ## Run the Pipeline
 
@@ -58,6 +71,8 @@ pip install spacy
 python -m spacy download en_core_web_lg
 ```
 
+After installing spaCy and `en_core_web_lg`, rerun `scripts/03_run_detection.py` and `scripts/04_evaluate.py` to include `spacy_person`.
+
 Use this as an additional baseline after you understand the local rules and traditional ML detectors. It is optional because the main learning objective is to evaluate targeted, locally runnable approaches first.
 
 ## Repository Structure
@@ -81,7 +96,15 @@ survey-processing-contamination-detection/
 
 ## Expected Outputs
 
-Running the pipeline writes generated artifacts under `outputs/`, including prepared name reference files, synthetic labeled business names, detector scores, metrics tables, plots, and error examples. Treat these as reproducible run outputs rather than source files to maintain by hand.
+Running the pipeline writes generated artifacts under `outputs/`. Treat these as reproducible run outputs rather than source files to maintain by hand.
+
+- `outputs/surnames_top.csv`: prepared surname reference data; inspect the highest-frequency surnames used by the detectors and synthetic generator
+- `outputs/first_names_top.csv`: prepared first-name reference data; inspect common first names available for contamination examples
+- `outputs/synthetic_business_names.csv`: labeled synthetic dataset; inspect clean business names, contaminated rows, and the target labels
+- `outputs/detector_scores.csv`: row-level detector outputs; compare which records each detector flags
+- `outputs/detector_metrics.csv`: precision, recall, F1, and true/false positive and negative counts; compare detector trade-offs
+- `outputs/error_examples.csv`: false positives and false negatives; inspect concrete cases behind the metrics
+- `outputs/detector_metrics.png`: metrics plot; use it as a quick visual comparison of detector performance
 
 ## Teaching Notes
 
