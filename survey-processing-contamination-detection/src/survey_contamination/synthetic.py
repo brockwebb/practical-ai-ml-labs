@@ -35,12 +35,37 @@ CONTAMINATION_PATTERNS = ["first_last", "first_middle_last", "initial_last", "la
 
 
 def _weighted_choice(rng: np.random.Generator, frame: pd.DataFrame) -> str:
-    weights = frame["count"].to_numpy(dtype=float)
-    probabilities = weights / weights.sum()
-    return str(rng.choice(frame["name"].to_numpy(), p=probabilities))
+    required_columns = {"name", "count"}
+    missing_columns = required_columns - set(frame.columns)
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"name data is missing required column(s): {missing}")
+    if frame.empty:
+        raise ValueError("name data must contain at least one row")
+
+    names = frame["name"]
+    if names.isna().any() or names.astype(str).str.strip().eq("").any():
+        raise ValueError("name data must include non-empty names")
+
+    try:
+        weights = pd.to_numeric(frame["count"], errors="raise").to_numpy(dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("name data count values must be numeric") from exc
+
+    if not np.isfinite(weights).all():
+        raise ValueError("name data count values must be finite")
+    if (weights < 0).any():
+        raise ValueError("name data count values must not be negative")
+
+    total_weight = weights.sum()
+    if not np.isfinite(total_weight) or total_weight <= 0:
+        raise ValueError("name data must have a positive finite total count weight")
+
+    probabilities = weights / total_weight
+    return str(rng.choice(names.to_numpy(), p=probabilities))
 
 
-def _make_clean_business_name(rng: np.random.Generator) -> tuple[str, str]:
+def _make_clean_business_name(rng: np.random.Generator, surnames: pd.DataFrame) -> tuple[str, str]:
     pattern = str(rng.choice(["root_industry_suffix", "owner_industry_suffix", "root_suffix"]))
     if pattern == "root_industry_suffix":
         return (
@@ -48,8 +73,12 @@ def _make_clean_business_name(rng: np.random.Generator) -> tuple[str, str]:
             pattern,
         )
     if pattern == "owner_industry_suffix":
+        owner = _weighted_choice(rng, surnames)
+        suffix = str(rng.choice(BUSINESS_SUFFIXES))
+        if suffix == "Associates":
+            return (f"{owner} & Associates", pattern)
         return (
-            f"{rng.choice(BUSINESS_ROOTS)} {rng.choice(INDUSTRY_TERMS)} {rng.choice(BUSINESS_SUFFIXES)}",
+            f"{owner} {rng.choice(INDUSTRY_TERMS)} {suffix}",
             pattern,
         )
     return (f"{rng.choice(BUSINESS_ROOTS)} {rng.choice(BUSINESS_SUFFIXES)}", pattern)
@@ -96,7 +125,7 @@ def generate_labeled_business_names(
             name, pattern = _make_contaminated_name(rng, first_names, surnames)
             is_contaminated = True
         else:
-            name, pattern = _make_clean_business_name(rng)
+            name, pattern = _make_clean_business_name(rng, surnames)
             is_contaminated = False
         rows.append(
             {
