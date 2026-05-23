@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+from io import TextIOWrapper
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -21,6 +23,34 @@ def normalize_person_name(value: str) -> str:
     return str(value).strip().title()
 
 
+def _read_ssa_member(archive: ZipFile, member: str) -> pd.DataFrame:
+    columns = ["state", "sex", "year", "name", "count"]
+    records: list[list[str]] = []
+
+    with archive.open(member) as file_obj:
+        text_file = TextIOWrapper(file_obj, encoding="utf-8", newline="")
+        for line_number, row in enumerate(csv.reader(text_file), start=1):
+            if len(row) != len(columns):
+                raise ValueError(
+                    f"Malformed SSA row in {member} at line {line_number}: "
+                    f"expected {len(columns)} fields, found {len(row)}"
+                )
+            records.append(row)
+
+    frame = pd.DataFrame(records, columns=columns)
+    missing_name = frame["name"].isna() | frame["name"].str.strip().eq("")
+    missing_count = frame["count"].isna() | frame["count"].str.strip().eq("")
+    if missing_name.any() or missing_count.any():
+        raise ValueError(f"SSA file {member} contains missing name or count values")
+
+    numeric_count = pd.to_numeric(frame["count"], errors="coerce")
+    if numeric_count.isna().any():
+        raise ValueError(f"SSA file {member} contains non-numeric count values")
+
+    frame["count"] = numeric_count.astype("int64")
+    return frame
+
+
 def load_surnames(path: str | Path = DEFAULT_SURNAME_PATH, top_n: int | None = None) -> pd.DataFrame:
     data_path = _require_file(Path(path))
     frame = pd.read_csv(data_path)
@@ -29,6 +59,7 @@ def load_surnames(path: str | Path = DEFAULT_SURNAME_PATH, top_n: int | None = N
     if missing:
         raise ValueError(f"Surname file is missing columns: {sorted(missing)}")
 
+    frame = frame.loc[frame["rank"] != 0].copy()
     result = frame.loc[:, ["name", "rank", "count"]].copy()
     result["name"] = result["name"].map(normalize_person_name)
     result["source"] = "census_surname"
@@ -41,14 +72,12 @@ def load_surnames(path: str | Path = DEFAULT_SURNAME_PATH, top_n: int | None = N
 def load_first_names(path: str | Path = DEFAULT_FIRST_NAME_ZIP, top_n: int | None = None) -> pd.DataFrame:
     data_path = _require_file(Path(path))
     rows: list[pd.DataFrame] = []
-    columns = ["state", "sex", "year", "name", "count"]
 
     with ZipFile(data_path) as archive:
         for member in archive.namelist():
             if not member.endswith(".TXT"):
                 continue
-            with archive.open(member) as file_obj:
-                rows.append(pd.read_csv(file_obj, names=columns))
+            rows.append(_read_ssa_member(archive, member))
 
     if not rows:
         raise ValueError(f"No SSA state TXT files found in {data_path}")
