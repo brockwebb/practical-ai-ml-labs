@@ -3,6 +3,7 @@
 /data/*.zip
 /data/*.csv
 *.txt
+.DS_Store
 .worktrees
 .worktrees/
 worktrees
