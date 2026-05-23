@@ -3,6 +3,10 @@
 /data/*.zip
 /data/*.csv
 *.txt
+.worktrees
+.worktrees/
+worktrees
+worktrees/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
