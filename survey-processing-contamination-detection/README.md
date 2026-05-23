@@ -60,7 +60,7 @@ Each script bootstraps the local `src` package path, so you do not need to set `
 jupyter notebook notebooks/contamination_detection_lab.ipynb
 ```
 
-The notebook follows the same lab flow as the scripts, with narrative explanations and plots for teaching or self-study.
+The notebook follows the same lab flow as the scripts, with narrative explanations and tabular summaries for teaching or self-study.
 
 ## Optional spaCy Baseline
 
@@ -101,7 +101,7 @@ Running the pipeline writes generated artifacts under `outputs/`. Treat these as
 - `outputs/surnames_top.csv`: prepared surname reference data; inspect the highest-frequency surnames used by the detectors and synthetic generator
 - `outputs/first_names_top.csv`: prepared first-name reference data; inspect common first names available for contamination examples
 - `outputs/synthetic_business_names.csv`: labeled synthetic dataset; inspect clean business names, contaminated rows, and the target labels
-- `outputs/detector_scores.csv`: row-level detector outputs; compare which records each detector flags
+- `outputs/detector_scores.csv`: row-level detector outputs for the held-out test split; compare which records each detector flags
 - `outputs/detector_metrics.csv`: precision, recall, F1, and true/false positive and negative counts; compare detector trade-offs
 - `outputs/error_examples.csv`: false positives and false negatives; inspect concrete cases behind the metrics
 - `outputs/detector_metrics.png`: metrics plot; use it as a quick visual comparison of detector performance
@@ -115,3 +115,4 @@ This lab is useful for discussions about:
 - why transparent rules can be valuable in review workflows
 - how traditional ML can complement deterministic checks
 - what evidence you would need before adding a hosted AI service
+- why synthetic labels are useful for learning workflow mechanics, not proof of production performance on real survey data
