@@ -1,0 +1,6 @@
+# Ignore all data files
+*
+
+# But keep this README and gitignore
+!README.md
+!.gitignore
