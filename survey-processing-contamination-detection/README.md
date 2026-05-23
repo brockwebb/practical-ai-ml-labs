@@ -1,84 +1,94 @@
 # Survey Processing Contamination Detection
 
-A practical lab for detecting personal names accidentally entered in business name fields using machine learning and rule-based approaches.
+A practical lab for detecting personal names accidentally entered in business name fields using local rules, standard Python packages, and traditional machine learning.
 
-## Problem Statement
+## Why Not Start With an LLM?
 
-Survey respondents sometimes mistakenly enter personal names (e.g., "John Smith") in fields intended for business names (e.g., "Smith & Associates LLC"). This lab demonstrates automated detection of such contamination using various approaches including spaCy NER, rule-based patterns, and custom ML models.
+This lab is intentionally not an LLM lab. The problem has structured clues, local reference data, measurable error trade-offs, and privacy considerations. Those properties make it a strong fit for deterministic rules and traditional ML before considering hosted AI services.
 
-## Learning Objectives
+The goal is not to rule out LLMs forever. It is to practice choosing the smallest reliable tool for a targeted data quality problem, then measuring where that tool succeeds and fails.
 
-- Build realistic contamination datasets using official government data sources
-- Implement and compare multiple detection approaches
-- Evaluate model performance at low contamination rates (0.1-1%)
-- Create reproducible pipelines for data quality assessment
+## What You Will Build
 
-## Setup Instructions
+You will build a runnable contamination detection pipeline that:
 
-### 1. Create Conda Environment
+- prepares reference name data from local files
+- creates synthetic business names with labeled contamination
+- compares dictionary, heuristic, and feature-based ML detectors
+- evaluates precision, recall, F1, confusion matrices, and error examples
+- walks through the workflow in a teaching notebook
+
+## Setup
 
 ```bash
-# Create new environment with Python 3.11
-conda create -n spacy-detect python=3.11
-
-# Activate environment
-conda activate spacy-detect
+conda create -n survey-contamination python=3.11
+conda activate survey-contamination
+pip install -r requirements.txt
 ```
 
-### 2. Install Dependencies
+If your system does not provide `python`, use `python3` for the commands below.
+
+## Run the Pipeline
+
+Run these commands from the `survey-processing-contamination-detection` lab directory:
 
 ```bash
-# Install core packages
-pip install pandas numpy matplotlib seaborn scikit-learn
+python scripts/01_data_preparation.py
+python scripts/02_generate_contamination.py
+python scripts/03_run_detection.py
+python scripts/04_evaluate.py
+```
 
-# Install spaCy and download model
+Each script bootstraps the local `src` package path, so you do not need to set `PYTHONPATH`.
+
+## Run the Notebook
+
+```bash
+jupyter notebook notebooks/contamination_detection_lab.ipynb
+```
+
+The notebook follows the same lab flow as the scripts, with narrative explanations and plots for teaching or self-study.
+
+## Optional spaCy Baseline
+
+The core lab does not require spaCy. To try the optional NER detector:
+
+```bash
 pip install spacy
 python -m spacy download en_core_web_lg
-
-# Install optional ML packages
-pip install transformers torch  # For BERT experiments (optional)
 ```
 
-### 3. Data Setup
+Use this as an additional baseline after you understand the local rules and traditional ML detectors. It is optional because the main learning objective is to evaluate targeted, locally runnable approaches first.
 
-Download the SSA baby names dataset:
-1. Visit: https://www.ssa.gov/oact/babynames/limits.html
-2. Download "National data" or "State-specific data" 
-3. Extract to `data/namebystate/` directory
+## Repository Structure
 
-```bash
-# Create data directory
-mkdir -p data/namebystate
-# Extract your downloaded files here
+```text
+survey-processing-contamination-detection/
+|-- data/                         # Local reference datasets used by the lab
+|-- notebooks/
+|   `-- contamination_detection_lab.ipynb
+|-- scripts/
+|   |-- 01_data_preparation.py
+|   |-- 02_generate_contamination.py
+|   |-- 03_run_detection.py
+|   `-- 04_evaluate.py
+|-- src/
+|   `-- survey_contamination/      # Data loading, synthetic data, detectors, evaluation
+|-- tests/                         # Unit tests for lab components
+|-- requirements.txt
+`-- README.md
 ```
 
-### 4. Verify Installation
+## Expected Outputs
 
-```python
-import spacy
-nlp = spacy.load("en_core_web_lg")
-print("spaCy model loaded successfully!")
+Running the pipeline writes generated artifacts under `outputs/`, including prepared name reference files, synthetic labeled business names, detector scores, metrics tables, plots, and error examples. Treat these as reproducible run outputs rather than source files to maintain by hand.
 
-# Test on sample text
-doc = nlp("John Smith Inc")
-for ent in doc.ents:
-    print(f"{ent.text}: {ent.label_}")
-```
+## Teaching Notes
 
-## Usage
+This lab is useful for discussions about:
 
-1. **Generate contaminated dataset**: Create realistic business name contamination
-2. **Run detection pipeline**: Apply spaCy NER and other detection methods
-3. **Evaluate performance**: Calculate precision, recall, and F1 scores
-4. **Compare approaches**: Analyze trade-offs between different detection methods
-
-## Lab Structure
-
-- `01_data_preparation.py` - Load and prepare name datasets
-- `02_contamination_pipeline.py` - Generate realistic contaminated data
-- `03_detection_methods.py` - Implement various detection approaches
-- `04_evaluation.py` - Performance analysis and visualization
-
-## Expected Outcomes
-
-Learn to build production-ready contamination detection systems applicable to data quality problems across government and business survey processing workflows.
+- when local reference data is enough
+- how low contamination rates affect precision and recall
+- why transparent rules can be valuable in review workflows
+- how traditional ML can complement deterministic checks
+- what evidence you would need before adding a hosted AI service
