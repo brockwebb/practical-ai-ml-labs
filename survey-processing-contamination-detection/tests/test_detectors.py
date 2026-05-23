@@ -23,6 +23,15 @@ def test_business_suffix_heuristic_avoids_business_suffix_false_positive():
     assert predictions.tolist() == [True, False]
 
 
+def test_business_suffix_heuristic_accepts_generator_input():
+    detector = BusinessSuffixHeuristicDetector(first_names={"John"}, surnames={"Smith"})
+    values = (value for value in ["John Smith", "Smith Consulting LLC"])
+
+    predictions = detector.predict(values)
+
+    assert predictions.tolist() == [True, False]
+
+
 def test_feature_classifier_detector_learns_obvious_examples():
     training = pd.DataFrame(
         {

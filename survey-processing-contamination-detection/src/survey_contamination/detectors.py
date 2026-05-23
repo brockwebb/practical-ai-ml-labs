@@ -40,9 +40,10 @@ class BusinessSuffixHeuristicDetector(NameDictionaryDetector):
     name = "business_suffix_heuristic"
 
     def score(self, values: Iterable[str]) -> np.ndarray:
-        base_scores = super().score(values)
+        value_list = list(values)
+        base_scores = super().score(value_list)
         adjusted: list[float] = []
-        for value, score in zip(values, base_scores, strict=False):
+        for value, score in zip(value_list, base_scores, strict=False):
             tokens = {token.lower() for token in tokenize(value)}
             if tokens.intersection(BUSINESS_TERMS):
                 adjusted.append(min(float(score), 0.25))
