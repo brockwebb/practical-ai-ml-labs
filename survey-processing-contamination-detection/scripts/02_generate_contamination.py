@@ -1,18 +1,36 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
-from survey_contamination.data import load_first_names, load_surnames
+import pandas as pd
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
 from survey_contamination.synthetic import generate_labeled_business_names
 
 
-OUTPUT_DIR = Path("outputs")
+OUTPUT_DIR = PROJECT_ROOT / "outputs"
+
+
+def require_input(path: Path) -> None:
+    if not path.exists():
+        raise FileNotFoundError(f"Missing {path}. Run scripts/01_data_preparation.py before this script.")
 
 
 def main() -> None:
     OUTPUT_DIR.mkdir(exist_ok=True)
-    surnames = load_surnames(top_n=5_000)
-    first_names = load_first_names(top_n=5_000)
+    surnames_path = OUTPUT_DIR / "surnames_top.csv"
+    first_names_path = OUTPUT_DIR / "first_names_top.csv"
+    require_input(surnames_path)
+    require_input(first_names_path)
+
+    surnames = pd.read_csv(surnames_path).head(5_000)
+    first_names = pd.read_csv(first_names_path).head(5_000)
     frame = generate_labeled_business_names(
         first_names=first_names,
         surnames=surnames,

@@ -1,15 +1,26 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
-import matplotlib.pyplot as plt
+import matplotlib
 import pandas as pd
+
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import seaborn as sns
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from survey_contamination.evaluation import evaluate_detector_predictions, summarize_error_examples
 
 
-OUTPUT_DIR = Path("outputs")
+OUTPUT_DIR = PROJECT_ROOT / "outputs"
 
 
 def main() -> None:
@@ -17,7 +28,14 @@ def main() -> None:
     if not input_path.exists():
         raise FileNotFoundError("Run scripts/03_run_detection.py before this script.")
 
-    scores = pd.read_csv(input_path)
+    try:
+        scores = pd.read_csv(input_path)
+    except pd.errors.EmptyDataError as exc:
+        raise ValueError("Detector scores are empty. Run scripts/03_run_detection.py again.") from exc
+
+    if scores.empty:
+        raise ValueError("Detector scores are empty. Run scripts/03_run_detection.py again.")
+
     metrics = pd.DataFrame(
         [
             evaluate_detector_predictions(group, detector_name=str(detector))

@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from survey_contamination.data import load_first_names, load_surnames
 
 
-OUTPUT_DIR = Path("outputs")
+OUTPUT_DIR = PROJECT_ROOT / "outputs"
 
 
 def main() -> None:
